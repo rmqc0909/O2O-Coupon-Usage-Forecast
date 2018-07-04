@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import pandas as pd
 import numpy as np
 from datetime import date
@@ -19,8 +21,7 @@ def get_day_gap_before(s):
     for d in dates:
         this_gap = (date(int(date_received[0:4]), int(date_received[4:6]), int(date_received[6:8])) - date(int(d[0:4]),
                                                                                                            int(d[4:6]),
-                                                                                                           int(d[
-                                                                                                               6:8]))).days
+                                                                                                           int(d[6:8]))).days
         if this_gap > 0:
             gaps.append(this_gap)
     if len(gaps) == 0:
@@ -106,10 +107,10 @@ def covert_int(s):
 def other_feature(dataset):
     t = dataset[['user_id']]
     t['this_month_user_receive_all_coupon_count'] = 1
-    t = t.groupby('user_id').agg('sum').reset_index()
+    t = t.groupby('user_id').agg('sum').reset_index()  # 用户领取的所有优惠券数目
 
     t1 = dataset[['user_id', 'coupon_id']]
-    t1['this_month_user_receive_same_coupon_count'] = 1
+    t1['this_month_user_receive_same_coupon_count'] = 1  # 用户领取特定优惠券数目
     t1 = t1.groupby(['user_id', 'coupon_id']).agg('sum').reset_index()
 
     t2 = dataset[['user_id', 'coupon_id', 'date_received']]
@@ -149,8 +150,8 @@ def other_feature(dataset):
     t7 = dataset[['user_id', 'coupon_id', 'date_received']]
     t7 = pd.merge(t7, t6, on=['user_id', 'coupon_id'], how='left')
     t7['date_received_date'] = t7.date_received.astype('str') + '-' + t7.dates
-    t7['day_gap_before'] = t7.date_received_date.apply(get_day_gap_before)
-    t7['day_gap_after'] = t7.date_received_date.apply(get_day_gap_after)
+    t7['day_gap_before'] = t7.date_received_date.apply(get_day_gap_before)  #用户上一次领取的时间间隔
+    t7['day_gap_after'] = t7.date_received_date.apply(get_day_gap_after)    #用户下一次领取的时间间隔
     t7 = t7[['user_id', 'coupon_id', 'date_received', 'day_gap_before', 'day_gap_after']]
 
     other_feature = pd.merge(t1, t, on='user_id')
@@ -354,9 +355,6 @@ def user_merchant(feature):
     return user_merchant
 
 
-
-
-
 if __name__ == '__main__':
     off_train = pd.read_csv('data/ccf_offline_stage1_train.csv', header=None, keep_default_na=False)
     off_train.columns = ['user_id', 'merchant_id', 'coupon_id', 'discount_rate', 'distance', 'date_received', 'date']
@@ -377,7 +375,6 @@ if __name__ == '__main__':
     feature1 = off_train[(off_train.date >= '20160101') & (off_train.date <= '20160413') | (
             (off_train.date == 'null') & (off_train.date_received >= '20160101') & (
             off_train.date_received <= '20160413'))]
-
 
     other_feature3 = other_feature(dataset3)
     other_feature3.to_csv('data/other_feature3.csv', index=None)
@@ -487,13 +484,3 @@ if __name__ == '__main__':
                   inplace=True)
     dataset1 = dataset1.replace('null', np.nan)
     dataset1.to_csv('data/dataset1.csv', index=None)
-
-
-
-
-
-
-
-
-
-
