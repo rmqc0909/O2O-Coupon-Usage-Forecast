@@ -150,8 +150,8 @@ def other_feature(dataset):
     t7 = dataset[['user_id', 'coupon_id', 'date_received']]
     t7 = pd.merge(t7, t6, on=['user_id', 'coupon_id'], how='left')
     t7['date_received_date'] = t7.date_received.astype('str') + '-' + t7.dates
-    t7['day_gap_before'] = t7.date_received_date.apply(get_day_gap_before)  #用户上一次领取的时间间隔
-    t7['day_gap_after'] = t7.date_received_date.apply(get_day_gap_after)    #用户下一次领取的时间间隔
+    t7['day_gap_before'] = t7.date_received_date.apply(get_day_gap_before)  #距离用户上一次领券的时间间隔
+    t7['day_gap_after'] = t7.date_received_date.apply(get_day_gap_after)    #距离用户下一次领券的时间间隔
     t7 = t7[['user_id', 'coupon_id', 'date_received', 'day_gap_before', 'day_gap_after']]
 
     other_feature = pd.merge(t1, t, on='user_id')
@@ -164,14 +164,14 @@ def other_feature(dataset):
 
 def coupon_feature(dataset):
     dataset['day_of_week'] = dataset.date_received.astype('str').apply(
-        lambda x: date(int(x[0:4]), int(x[4:6]), int(x[6:8])).weekday() + 1)
-    dataset['day_of_month'] = dataset.date_received.astype('str').apply(lambda x: int(x[6:8]))
+        lambda x: date(int(x[0:4]), int(x[4:6]), int(x[6:8])).weekday() + 1)    #优惠券领取日期是一周的第几天
+    dataset['day_of_month'] = dataset.date_received.astype('str').apply(lambda x: int(x[6:8]))  #优惠券领取日期是一月的第几天
     dataset['days_distance'] = dataset.date_received.astype('str').apply(
-        lambda x: (date(int(x[0:4]), int(x[4:6]), int(x[6:8])) - date(2016, 6, 30)).days)
-    dataset['discount_man'] = dataset.discount_rate.apply(get_discount_man)
-    dataset['discount_jian'] = dataset.discount_rate.apply(get_discount_jian)
-    dataset['is_man_jian'] = dataset.discount_rate.apply(is_man_jian)
-    dataset['discount_rate'] = dataset.discount_rate.apply(calc_discount_rate)
+        lambda x: (date(int(x[0:4]), int(x[4:6]), int(x[6:8])) - date(2016, 6, 30)).days)   #优惠券领取日期距离6月30号多少天
+    dataset['discount_man'] = dataset.discount_rate.apply(get_discount_man)     #优惠券满多少元
+    dataset['discount_jian'] = dataset.discount_rate.apply(get_discount_jian)   #优惠券减多少元
+    dataset['is_man_jian'] = dataset.discount_rate.apply(is_man_jian)   #优惠类型是否为满减，若是，则为1，不是，则为0
+    dataset['discount_rate'] = dataset.discount_rate.apply(calc_discount_rate)  #优惠券折扣率
     d = dataset[['coupon_id']]
     d['coupon_count'] = 1
     d = d.groupby('coupon_id').agg('sum').reset_index()
@@ -189,7 +189,7 @@ def merchant_feature(feature):
     t1['total_sales'] = 1
     t1 = t1.groupby('merchant_id').agg('sum').reset_index()
 
-    t2 = merchant[(merchant.date != 'null') & (merchant.coupon_id != 'null')][['merchant_id']]
+    t2 = merchant[(merchant.date != 'null') & (merchant.coupon_id != 'null')][['merchant_id']]  #用优惠消费的日期，即正样本
     t2['sales_use_coupon'] = 1
     t2 = t2.groupby('merchant_id').agg('sum').reset_index()
 
@@ -222,9 +222,9 @@ def merchant_feature(feature):
     merchant_feature = pd.merge(merchant_feature, t8, on='merchant_id', how='left')
     merchant_feature.sales_use_coupon = merchant_feature.sales_use_coupon.replace(np.nan, 0)  # fillna with 0
     merchant_feature['merchant_coupon_transfer_rate'] = merchant_feature.sales_use_coupon.astype(
-        'float') / merchant_feature.total_coupon
+        'float') / merchant_feature.total_coupon    #商家被核销过的不同优惠券数量占所有领取过的不同优惠券数量的比重
     merchant_feature['coupon_rate'] = merchant_feature.sales_use_coupon.astype(
-        'float') / merchant_feature.total_sales
+        'float') / merchant_feature.total_sales     #用券购买率，即用券购买的数量/购买的总量
     merchant_feature.total_coupon = merchant_feature.total_coupon.replace(np.nan, 0)  # fillna with 0
     return merchant_feature
 
@@ -296,9 +296,9 @@ def user_feature(feature):
     user_feature.buy_use_coupon = user_feature.buy_use_coupon.replace(np.nan, 0)
     user_feature['buy_use_coupon_rate'] = user_feature.buy_use_coupon.astype(
         'float') / user_feature.buy_total.astype(
-        'float')
+        'float')    #用户用优惠券购买次数/用户所有的购买次数
     user_feature['user_coupon_transfer_rate'] = user_feature.buy_use_coupon.astype(
-        'float') / user_feature.coupon_received.astype('float')
+        'float') / user_feature.coupon_received.astype('float')     #用户领取优惠券后进行核销率
     user_feature.buy_total = user_feature.buy_total.replace(np.nan, 0)
     user_feature.coupon_received = user_feature.coupon_received.replace(np.nan, 0)
     return user_feature
