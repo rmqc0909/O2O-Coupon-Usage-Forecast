@@ -23,14 +23,14 @@ dataset12_x = dataset12.drop(['user_id','label','day_gap_before','day_gap_after'
 dataset3_preds = dataset3[['user_id','coupon_id','date_received']]
 dataset3_x = dataset3.drop(['user_id','coupon_id','date_received','day_gap_before','day_gap_after'],axis=1)
 
-print dataset1_x.shape,dataset2_x.shape,dataset3_x.shape
 
 dataset1 = xgb.DMatrix(dataset1_x,label=dataset1_y)
 dataset2 = xgb.DMatrix(dataset2_x,label=dataset2_y)
 dataset12 = xgb.DMatrix(dataset12_x,label=dataset12_y)
 dataset3 = xgb.DMatrix(dataset3_x)
 
-params={'booster':'gbtree',
+params={
+		'booster':'gbtree',
 	    'objective': 'rank:pairwise',
 	    'eval_metric':'auc',
 	    'gamma':0.1,

@@ -345,7 +345,7 @@ def user_merchant(feature):
     user_merchant.user_merchant_buy_use_coupon = user_merchant.user_merchant_buy_use_coupon.replace(np.nan, 0)
     user_merchant.user_merchant_buy_common = user_merchant.user_merchant_buy_common.replace(np.nan, 0)
     user_merchant['user_merchant_coupon_transfer_rate'] = user_merchant.user_merchant_buy_use_coupon.astype(
-        'float') / user_merchant.user_merchant_received.astype('float')
+        'float') / user_merchant.user_merchant_received.astype('float')     #用户领取商家的优惠券后核销率
     user_merchant['user_merchant_coupon_buy_rate'] = user_merchant.user_merchant_buy_use_coupon.astype(
         'float') / user_merchant.user_merchant_buy_total.astype('float')
     user_merchant['user_merchant_rate'] = user_merchant.user_merchant_buy_total.astype(
